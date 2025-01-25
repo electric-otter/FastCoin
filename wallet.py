@@ -1,11 +1,9 @@
 import tkinter as tk
-from cryptography.fernet import Fernet
 
 class FastCoinWallet:
-    def __init__(self, balance=0):
+    def __init__(self, balance=0, security_key=""):
         self.balance = balance
-        self.key = Fernet.generate_key()
-        self.cipher = Fernet(self.key)
+        self.security_key = security_key
 
     def earn_fastcoin(self, amount=1):
         self.balance += amount
@@ -15,15 +13,15 @@ class FastCoinWallet:
         return self.balance
 
     def save_balance(self):
-        encrypted_balance = self.cipher.encrypt(str(self.balance).encode())
-        with open("money.txt", "wb") as file:
+        encrypted_balance = self.encrypt(str(self.balance))
+        with open("money.txt", "w") as file:
             file.write(encrypted_balance)
 
     def load_balance(self):
         try:
-            with open("money.txt", "rb") as file:
+            with open("money.txt", "r") as file:
                 encrypted_balance = file.read()
-                self.balance = int(self.cipher.decrypt(encrypted_balance).decode())
+                self.balance = int(self.decrypt(encrypted_balance))
         except FileNotFoundError:
             self.balance = 0
 
@@ -35,12 +33,26 @@ class FastCoinWallet:
         else:
             print("Insufficient balance")
 
+    def encrypt(self, text):
+        return ''.join(chr(ord(char) + len(self.security_key)) for char in text)
+
+    def decrypt(self, text):
+        return ''.join(chr(ord(char) - len(self.security_key)) for char in text)
+
 class FastCoinApp:
     def __init__(self, root, wallet):
         self.root = root
         self.wallet = wallet
 
         self.root.title("FastCoin")
+
+        self.security_label = tk.Label(root, text="Enter your security key:")
+        self.security_label.pack(pady=10)
+        self.security_entry = tk.Entry(root)
+        self.security_entry.pack(pady=10)
+
+        self.set_security_button = tk.Button(root, text="Set Security Key", command=self.set_security_key)
+        self.set_security_button.pack(pady=10)
 
         self.balance_label = tk.Label(root, text=f"Current balance: {self.wallet.get_balance()} FC")
         self.balance_label.pack(pady=10)
@@ -61,6 +73,13 @@ class FastCoinApp:
         self.pay_button = tk.Button(root, text="Pay FastCoin", command=self.pay_fastcoin)
         self.pay_button.pack(pady=10)
 
+    def set_security_key(self):
+        security_key = self.security_entry.get()
+        self.wallet.security_key = security_key
+        self.wallet.load_balance()
+        self.balance_label.config(text=f"Current balance: {self.wallet.get_balance()} FC")
+        print("Security key set")
+
     def earn_fastcoin(self):
         self.wallet.earn_fastcoin()
         self.balance_label.config(text=f"Current balance: {self.wallet.get_balance()} FC")
@@ -76,7 +95,6 @@ class FastCoinApp:
 
 def main():
     wallet = FastCoinWallet()
-    wallet.load_balance()
     root = tk.Tk()
     app = FastCoinApp(root, wallet)
     root.mainloop()
