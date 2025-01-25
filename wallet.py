@@ -1,4 +1,6 @@
 import tkinter as tk
+import random
+import string
 
 class FastCoinWallet:
     def __init__(self, balance=0, security_key=""):
@@ -16,6 +18,7 @@ class FastCoinWallet:
         encrypted_balance = self.encrypt(str(self.balance))
         with open("money.txt", "w") as file:
             file.write(encrypted_balance)
+        print("Balance saved to money.txt")
 
     def load_balance(self):
         try:
@@ -39,6 +42,11 @@ class FastCoinWallet:
     def decrypt(self, text):
         return ''.join(chr(ord(char) - len(self.security_key)) for char in text)
 
+    def generate_security_key(self, length=16):
+        characters = string.ascii_letters + string.digits + string.punctuation
+        self.security_key = ''.join(random.choice(characters) for i in range(length))
+        print(f"Generated security key: {self.security_key}")
+
 class FastCoinApp:
     def __init__(self, root, wallet):
         self.root = root
@@ -46,13 +54,16 @@ class FastCoinApp:
 
         self.root.title("FastCoin")
 
-        self.security_label = tk.Label(root, text="Enter your security key:")
+        self.security_label = tk.Label(root, text="Enter your security key or generate a new one:")
         self.security_label.pack(pady=10)
         self.security_entry = tk.Entry(root)
         self.security_entry.pack(pady=10)
 
         self.set_security_button = tk.Button(root, text="Set Security Key", command=self.set_security_key)
         self.set_security_button.pack(pady=10)
+
+        self.generate_key_button = tk.Button(root, text="Generate Security Key", command=self.generate_security_key)
+        self.generate_key_button.pack(pady=10)
 
         self.balance_label = tk.Label(root, text=f"Current balance: {self.wallet.get_balance()} FC")
         self.balance_label.pack(pady=10)
@@ -91,6 +102,13 @@ class FastCoinApp:
         self.balance_label.config(text=f"Current balance: {self.wallet.get_balance()} FC")
         print("Security key set")
 
+    def generate_security_key(self):
+        self.wallet.generate_security_key()
+        self.security_entry.delete(0, tk.END)
+        self.security_entry.insert(0, self.wallet.security_key)
+        self.wallet.load_balance()
+        self.balance_label.config(text=f"Current balance: {self.wallet.get_balance()} FC")
+
     def earn_fastcoin(self):
         try:
             amount = int(self.amount_entry.get())
@@ -124,6 +142,11 @@ def main():
     wallet = FastCoinWallet()
     root = tk.Tk()
     app = FastCoinApp(root, wallet)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
+
     root.mainloop()
 
 if __name__ == "__main__":
