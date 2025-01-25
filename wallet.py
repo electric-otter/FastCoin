@@ -57,18 +57,29 @@ class FastCoinApp:
         self.balance_label = tk.Label(root, text=f"Current balance: {self.wallet.get_balance()} FC")
         self.balance_label.pack(pady=10)
 
-        self.earn_button = tk.Button(root, text="Earn 1 FC", command=self.earn_fastcoin)
+        self.amount_label = tk.Label(root, text="Enter amount of FastCoin to earn per click:")
+        self.amount_label.pack(pady=10)
+        self.amount_entry = tk.Entry(root)
+        self.amount_entry.pack(pady=10)
+
+        self.earn_button = tk.Button(root, text="Earn FastCoin", command=self.earn_fastcoin)
         self.earn_button.pack(pady=10)
+
+        self.triple_button = tk.Button(root, text="Triple Click Earnings", command=self.triple_click_earnings)
+        self.triple_button.pack(pady=10)
+
+        self.save_button = tk.Button(root, text="Save Balance", command=self.save_balance)
+        self.save_button.pack(pady=10)
 
         self.url_label = tk.Label(root, text="Enter URL to send FastCoin:")
         self.url_label.pack(pady=10)
         self.url_entry = tk.Entry(root)
         self.url_entry.pack(pady=10)
 
-        self.amount_label = tk.Label(root, text="Enter amount of FastCoin to send:")
-        self.amount_label.pack(pady=10)
-        self.amount_entry = tk.Entry(root)
-        self.amount_entry.pack(pady=10)
+        self.amount_pay_label = tk.Label(root, text="Enter amount of FastCoin to send:")
+        self.amount_pay_label.pack(pady=10)
+        self.amount_pay_entry = tk.Entry(root)
+        self.amount_pay_entry.pack(pady=10)
 
         self.pay_button = tk.Button(root, text="Pay FastCoin", command=self.pay_fastcoin)
         self.pay_button.pack(pady=10)
@@ -81,13 +92,29 @@ class FastCoinApp:
         print("Security key set")
 
     def earn_fastcoin(self):
-        self.wallet.earn_fastcoin()
-        self.balance_label.config(text=f"Current balance: {self.wallet.get_balance()} FC")
+        try:
+            amount = int(self.amount_entry.get())
+            self.wallet.earn_fastcoin(amount)
+            self.balance_label.config(text=f"Current balance: {self.wallet.get_balance()} FC")
+        except ValueError:
+            print("Please enter a valid amount")
+
+    def triple_click_earnings(self):
+        try:
+            amount = int(self.amount_entry.get())
+            self.wallet.earn_fastcoin(amount * 3)
+            self.balance_label.config(text=f"Current balance: {self.wallet.get_balance()} FC")
+        except ValueError:
+            print("Please enter a valid amount")
+
+    def save_balance(self):
+        self.wallet.save_balance()
+        print("Balance saved manually")
 
     def pay_fastcoin(self):
         url = self.url_entry.get()
         try:
-            amount = int(self.amount_entry.get())
+            amount = int(self.amount_pay_entry.get())
             self.wallet.pay_fastcoin(amount, url)
             self.balance_label.config(text=f"Current balance: {self.wallet.get_balance()} FC")
         except ValueError:
