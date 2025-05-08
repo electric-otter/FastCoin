@@ -52,8 +52,8 @@ class FastCoinApp:
         self.root = root
         self.wallet = wallet
 
-        self.root.title("FastCoin")
-
+        self.root.title("FastCoin 2")
+        print("New next-gen fastcoin.")
         self.security_label = tk.Label(root, text="Enter your security key or generate a new one:")
         self.security_label.pack(pady=10)
         self.security_entry = tk.Entry(root)
